@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
-import locale
+#import locale
 
 from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES
 
@@ -97,7 +97,7 @@ df = pd.concat([df_ev, df_ac, df_pv])
 df = df.pivot(index=['FASE', 'DESCRIPCION'], columns=['MES', 'MODELO'], values='COSTO')
 df = df.sort_index(axis=1, level=[0, 1])
 
-locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")
+#locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")
 
 def obtener_str_mes(l1):
     f1 = MESES.loc[0,l1]; f2 = MESES.loc[1,l1]
