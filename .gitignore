@@ -1,0 +1,5 @@
+_pycache_# Ignore Python bytecode files
+*.pyc
+__pycache__/
+.venv/
+run.bat
