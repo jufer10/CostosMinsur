@@ -36,6 +36,9 @@ fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', nam
 fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')))
 
 
+
+
+
 df = BARRAS.melt(id_vars=['MODELO'], value_vars=[i for i in range(1, 32)], var_name='MES', value_name='VALOR')
 df['VALOR'] = df['VALOR'] * 10000
 
@@ -49,6 +52,9 @@ if fase == 'Todas':
     fig.add_trace(go.Bar(x=df_earned['MES'], y=df_earned['VALOR'], name='ACTUAL', marker_color='orange'))
 
 
+
+
+
 # Customize layout
 fig.update_layout(
     title= '📊 ANÁLISIS DE VALOR GANADO',
@@ -58,15 +64,6 @@ fig.update_layout(
     xaxis=dict(tickmode="linear", dtick=1),
     yaxis=dict(tickmode="linear", dtick=25000)
 )
-
-# Customize layout
-fig.update_layout(
-    title= '📊 ANÁLISIS DE VALOR GANADO',
-    xaxis_title="MES",
-    yaxis_title="ACUMULADO",
-    legend_title="Leyenda",
-)
-
 
 st.plotly_chart(fig)
 
