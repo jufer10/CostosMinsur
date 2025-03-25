@@ -1,11 +1,38 @@
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 #import locale
 
 from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES
 
+#FASES
+
 FASES =  DF_PV.dropna(subset=[1])['FASE'].tolist()
+fase = st.sidebar.selectbox("Fase", ['Todas'] + FASES)
+
+
+#FIGURA
+
+fig = make_subplots(
+    rows=2, cols=1,
+    shared_xaxes=True,
+    row_heights=[0.7, 0.3],  # Adjust size ratio of graph vs table
+    vertical_spacing=0.05,
+    specs=[[{"type": "xy"}], [{"type": "table"}]]  # Specify table type for second row
+)
+
+fig.update_layout(
+    title= '📊 ANÁLISIS DE VALOR GANADO',
+    xaxis_title="MES",
+    yaxis_title="ACUMULADO",
+    legend_title="Leyenda",
+    xaxis=dict(tickmode="linear", dtick=1),
+    yaxis=dict(tickmode="linear", dtick=25000)
+)
+
+
+#CURVAS
 
 def obtener_df_curva(DF, fase='Todas'):
     df=DF.dropna(subset=[1])
@@ -24,20 +51,16 @@ def obtener_df_curva(DF, fase='Todas'):
     
     return df
     
-fase = st.sidebar.selectbox("Fase", ['Todas'] + FASES)
-
 df_pv = obtener_df_curva(DF_PV, fase)
 df_ac = obtener_df_curva(DF_AC, fase)
 df_ev = obtener_df_curva(DF_EV, fase)
 
-fig = go.Figure()
 fig.add_trace(go.Scatter(x=df_pv['MES'], y=df_pv['ACUMULADO'], mode='lines', name='PV', line=dict(color='blue')))
 fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', name='AC', line=dict(color='red')))
 fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')))
 
 
-
-
+#BARRAS
 
 df = BARRAS.melt(id_vars=['MODELO'], value_vars=[i for i in range(1, 32)], var_name='MES', value_name='VALOR')
 df['VALOR'] = df['VALOR'] * 10000
@@ -52,18 +75,7 @@ if fase == 'Todas':
     fig.add_trace(go.Bar(x=df_earned['MES'], y=df_earned['VALOR'], name='ACTUAL', marker_color='orange'))
 
 
-
-
-
-# Customize layout
-fig.update_layout(
-    title= '📊 ANÁLISIS DE VALOR GANADO',
-    xaxis_title="MES",
-    yaxis_title="ACUMULADO",
-    legend_title="Leyenda",
-    xaxis=dict(tickmode="linear", dtick=1),
-    yaxis=dict(tickmode="linear", dtick=25000)
-)
+# SHOW
 
 st.plotly_chart(fig)
 
