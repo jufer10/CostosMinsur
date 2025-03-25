@@ -2,7 +2,6 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-#import locale
 
 from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES
 
@@ -11,38 +10,34 @@ from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES
 FASES =  DF_PV.dropna(subset=[1])['FASE'].tolist()
 fase = st.sidebar.selectbox("Fase", ['Todas'] + FASES)
 
-
-#FIGURA
-
-# fig = make_subplots(
-#     rows=2, cols=1,
-#     shared_xaxes=True,
-#     row_heights=[0.7, 0.3],
-#     vertical_spacing=0.05,
-#     specs=[[{"type": "bar"}], [{"type": "table"}]]
-# )
-
 fig = make_subplots(
     rows=2, cols=2,
-    shared_xaxes=True,
+    shared_yaxes=True,
     row_heights=[0.7, 0.3],
     column_widths=[0.05, 0.95],
     vertical_spacing=0.01,
     horizontal_spacing=0,
     specs=[
-        [None, {"type": "xy"}],
+        [None, {"type": "xy", "secondary_y": True}],
         [{"type": "table"}, {"type": "table"}]
     ]
 )
 
+# fig.update_layout(
+#     title= '📊 ANÁLISIS DE VALOR GANADO',
+#     xaxis_title="MES",
+#     yaxis_title="ACUMULADO",
+#     height=750,
+#     legend_title="Leyenda",
+#     xaxis=dict(tickmode="linear", dtick=1),
+#     yaxis=dict(tickmode="linear", dtick=25000)
+# )
 
 fig.update_layout(
     title= '📊 ANÁLISIS DE VALOR GANADO',
-    xaxis_title="MES",
-    yaxis_title="ACUMULADO",
+    height=750,
     legend_title="Leyenda",
-    xaxis=dict(tickmode="linear", dtick=1),
-    yaxis=dict(tickmode="linear", dtick=25000)
+    xaxis=dict(tickmode="linear", dtick=1)
 )
 
 
@@ -69,15 +64,14 @@ df_pv = obtener_df_curva(DF_PV, fase)
 df_ac = obtener_df_curva(DF_AC, fase)
 df_ev = obtener_df_curva(DF_EV, fase)
 
-fig.add_trace(go.Scatter(x=df_pv['MES'], y=df_pv['ACUMULADO'], mode='lines', name='PV', line=dict(color='blue')), row=1, col=2)
-fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', name='AC', line=dict(color='red')), row=1, col=2)
-fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')), row=1, col=2)
+fig.add_trace(go.Scatter(x=df_pv['MES'], y=df_pv['ACUMULADO'], mode='lines', name='PV', line=dict(color='blue')), secondary_y=True, row=1, col=2)
+fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', name='AC', line=dict(color='red')), secondary_y=True, row=1, col=2)
+fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')), secondary_y=True, row=1, col=2)
 
 
 #BARRAS
 
 df = BARRAS.melt(id_vars=['MODELO'], value_vars=[i for i in range(1, 32)], var_name='MES', value_name='VALOR')
-df['VALOR'] = df['VALOR'] * 10000
 
 df_plan = df.query('MODELO == "PLAN"')
 df_actual = df.query('MODELO == "ACTUAL"')
@@ -91,52 +85,45 @@ if fase == 'Todas':
 
 #TABLA
 
-# df1 = df_pv.set_index("MES").T; df1['MODELO'] = ['PV', 'ACUM PV']
-
-# df2 = df_ac.set_index("MES").T; df2['MODELO'] = ['AC', 'ACUM AC']
-
-# df3 = df_ev.set_index("MES").T; df3['MODELO'] = ['EV', 'ACUM EV']
-
-# df = pd.concat([df1, df2, df3, BARRAS]).reset_index(drop=True)
-
-# order = ['PV', 'AC', 'EV', 'ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL',]
-
-df1 = df_pv.set_index("MES").T.drop(index='COSTO')
-df2 = df_ac.set_index("MES").T.drop(index='COSTO')
-df3 = df_ev.set_index("MES").T.drop(index='COSTO')
-
-df = pd.concat([df1, df2, df3, BARRAS.drop(columns=['MODELO'])]).reset_index(drop=True)
-
 orden = ['ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL']
 
 fig.add_trace(
     go.Table(
-        header=dict(values=[''], align='center', fill_color='lightblue'),
+        header=dict(values=[" " * 21], align='center', fill_color='lightblue'),
         cells=dict(values=[orden], align='center')
     ),
     row=2, col=1
 )
 
-def format(x):
-    return f"{x:.2f}" if pd.notna(x) else x
-#df = df.applymap(format)
+
+def format_thousands(x):
+    return f"{round(x / 1000)}k" if pd.notnull(x) else x
+
+
+df1 = df_pv.set_index("MES").T.drop(index='COSTO').map(format_thousands)
+df2 = df_ac.set_index("MES").T.drop(index='COSTO').map(format_thousands)
+df3 = df_ev.set_index("MES").T.drop(index='COSTO').map(format_thousands)
+
+df = pd.concat([df1, df2, df3, BARRAS.drop(columns=['MODELO']).round(1)]).reset_index(drop=True).fillna("")
+
+def obtener_str_mes(l1):
+    f2 = MESES.loc[1,l1]
+    return f2.strftime("%b").capitalize() + " " + f2.strftime("%Y")
 
 fig.add_trace(
     go.Table(
-        header=dict(values=list(range(1, 32)), align='center', fill_color='lightblue'),
+        header=dict(values=[obtener_str_mes(l) for l in df.columns], align='center', fill_color='lightblue'),
         cells=dict(values=[df[col] for col in df.columns], align='center')
     ),
     row=2, col=2
 )
 
 
-
 #SHOW
-fig.update_layout(height=750)
 st.plotly_chart(fig)
 
 
-###########################################################################################
+#####################################################################################################################################################################################
 
 def obtener_df_tabla(DF: pd.DataFrame, modelo: str):
     df= DF.dropna(subset=[1])
@@ -162,11 +149,9 @@ df = pd.concat([df_ev, df_ac, df_pv])
 df = df.pivot(index=['FASE', 'DESCRIPCION'], columns=['MES', 'MODELO'], values='COSTO')
 df = df.sort_index(axis=1, level=[0, 1])
 
-#locale.setlocale(locale.LC_TIME, "Spanish_Spain.1252")
-
 def obtener_str_mes(l1):
     f1 = MESES.loc[0,l1]; f2 = MESES.loc[1,l1]
-    str1 = f1.strftime("%b").capitalize() + " " + f1.strftime("%d") + ", " + f1.strftime("%Y")
+    str1 = f1.strftime("%b").capitalize() + " " + f1.strftime("%d")
     str2 = f2.strftime("%b").capitalize() + " " + f2.strftime("%d") + ", " + f2.strftime("%Y")
     return "MES "+ str(l1) + ", " + str1 + " - " + str2
 
