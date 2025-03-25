@@ -14,13 +14,27 @@ fase = st.sidebar.selectbox("Fase", ['Todas'] + FASES)
 
 #FIGURA
 
+# fig = make_subplots(
+#     rows=2, cols=1,
+#     shared_xaxes=True,
+#     row_heights=[0.7, 0.3],
+#     vertical_spacing=0.05,
+#     specs=[[{"type": "bar"}], [{"type": "table"}]]
+# )
+
 fig = make_subplots(
-    rows=2, cols=1,
+    rows=2, cols=2,
     shared_xaxes=True,
-    row_heights=[0.7, 0.3],  # Adjust size ratio of graph vs table
-    vertical_spacing=0.05,
-    specs=[[{"type": "xy"}], [{"type": "table"}]]  # Specify table type for second row
+    row_heights=[0.7, 0.3],
+    column_widths=[0.05, 0.95],
+    vertical_spacing=0.01,
+    horizontal_spacing=0,
+    specs=[
+        [None, {"type": "xy"}],
+        [{"type": "table"}, {"type": "table"}]
+    ]
 )
+
 
 fig.update_layout(
     title= '📊 ANÁLISIS DE VALOR GANADO',
@@ -55,9 +69,9 @@ df_pv = obtener_df_curva(DF_PV, fase)
 df_ac = obtener_df_curva(DF_AC, fase)
 df_ev = obtener_df_curva(DF_EV, fase)
 
-fig.add_trace(go.Scatter(x=df_pv['MES'], y=df_pv['ACUMULADO'], mode='lines', name='PV', line=dict(color='blue')))
-fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', name='AC', line=dict(color='red')))
-fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=df_pv['MES'], y=df_pv['ACUMULADO'], mode='lines', name='PV', line=dict(color='blue')), row=1, col=2)
+fig.add_trace(go.Scatter(x=df_ac['MES'], y=df_ac['ACUMULADO'], mode='lines', name='AC', line=dict(color='red')), row=1, col=2)
+fig.add_trace(go.Scatter(x=df_ev['MES'], y=df_ev['ACUMULADO'], mode='lines', name='EV', line=dict(color='green')), row=1, col=2)
 
 
 #BARRAS
@@ -70,13 +84,55 @@ df_actual = df.query('MODELO == "ACTUAL"')
 df_earned = df.query('MODELO == "EARNED"')
 
 if fase == 'Todas':
-    fig.add_trace(go.Bar(x=df_plan['MES'], y=df_plan['VALOR'], name='PLANNED', marker_color='yellow'))
-    fig.add_trace(go.Bar(x=df_actual['MES'], y=df_actual['VALOR'], name='EARNED', marker_color='grey'))
-    fig.add_trace(go.Bar(x=df_earned['MES'], y=df_earned['VALOR'], name='ACTUAL', marker_color='orange'))
+    fig.add_trace(go.Bar(x=df_plan['MES'], y=df_plan['VALOR'], name='PLANNED', marker_color='yellow'), row=1, col=2)
+    fig.add_trace(go.Bar(x=df_actual['MES'], y=df_actual['VALOR'], name='EARNED', marker_color='grey'), row=1, col=2)
+    fig.add_trace(go.Bar(x=df_earned['MES'], y=df_earned['VALOR'], name='ACTUAL', marker_color='orange'), row=1, col=2)
 
 
-# SHOW
+#TABLA
 
+# df1 = df_pv.set_index("MES").T; df1['MODELO'] = ['PV', 'ACUM PV']
+
+# df2 = df_ac.set_index("MES").T; df2['MODELO'] = ['AC', 'ACUM AC']
+
+# df3 = df_ev.set_index("MES").T; df3['MODELO'] = ['EV', 'ACUM EV']
+
+# df = pd.concat([df1, df2, df3, BARRAS]).reset_index(drop=True)
+
+# order = ['PV', 'AC', 'EV', 'ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL',]
+
+df1 = df_pv.set_index("MES").T.drop(index='COSTO')
+df2 = df_ac.set_index("MES").T.drop(index='COSTO')
+df3 = df_ev.set_index("MES").T.drop(index='COSTO')
+
+df = pd.concat([df1, df2, df3, BARRAS.drop(columns=['MODELO'])]).reset_index(drop=True)
+
+orden = ['ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL']
+
+fig.add_trace(
+    go.Table(
+        header=dict(values=[''], align='center', fill_color='lightblue'),
+        cells=dict(values=[orden], align='center')
+    ),
+    row=2, col=1
+)
+
+def format(x):
+    return f"{x:.2f}" if pd.notna(x) else x
+#df = df.applymap(format)
+
+fig.add_trace(
+    go.Table(
+        header=dict(values=list(range(1, 32)), align='center', fill_color='lightblue'),
+        cells=dict(values=[df[col] for col in df.columns], align='center')
+    ),
+    row=2, col=2
+)
+
+
+
+#SHOW
+fig.update_layout(height=750)
 st.plotly_chart(fig)
 
 
