@@ -17,7 +17,7 @@ fig = make_subplots(
     rows=2, cols=2,
     shared_yaxes=True,
     row_heights=[0.7, 0.3],
-    column_widths=[0.05, 0.95],
+    column_widths=[0.06, 0.94],
     vertical_spacing=0.01,
     horizontal_spacing=0,
     specs=[
@@ -28,7 +28,7 @@ fig = make_subplots(
 
 fig.update_layout(
     title= '📊 ANÁLISIS DE VALOR GANADO',
-    height=750,
+    height=800,
     legend_title="Leyenda",
     xaxis=dict(tickmode="linear", dtick=1)
 )
@@ -92,8 +92,11 @@ orden = ['ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL']
 
 fig.add_trace(
     go.Table(
-        header=dict(values=[" " * 21], align='center', fill_color='lightblue'),
-        cells=dict(values=[orden], align='center')
+        header=dict(values=[""], align='center', fill_color='lightblue', height=50),
+        cells=dict(
+            values=[orden], align='center', fill_color='lightblue',
+            font=dict(color=[["blue", "red", "green","yellow", "grey", "orange"]], weight="bold")
+            )
     ),
     row=2, col=1
 )
@@ -115,8 +118,12 @@ def obtener_str_mes(l1):
 
 fig.add_trace(
     go.Table(
-        header=dict(values=[obtener_str_mes(l) for l in df.columns], align='center', fill_color='lightblue'),
-        cells=dict(values=[df[col] for col in df.columns], align='center')
+        header=dict(
+            values=[obtener_str_mes(l) for l in df.columns], 
+            align='center', fill_color='lightblue', height=50,
+            font=dict(color="black", weight="bold")
+            ),
+        cells=dict(values=[df[col] for col in df.columns], align='center'),
     ),
     row=2, col=2
 )
