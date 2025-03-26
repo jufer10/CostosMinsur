@@ -6,9 +6,7 @@ from plotly.subplots import make_subplots
 from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES
 
 #FASES
-
-FASES =  DF_PV.dropna(subset=[1])['FASE'].tolist()
-fase = st.sidebar.selectbox("Fase", ['Todas'] + FASES)
+fase = st.sidebar.selectbox("Fase", ['Todas'])
 
 
 #FIGURA
