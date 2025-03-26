@@ -66,9 +66,7 @@ def tabla_principal():
 
 
 
-
-
-
+    st.subheader("📌 Listado de datos por métricas EV, AC y PV por Mes")
 
 
     #DF VALORES
@@ -133,17 +131,18 @@ def tabla_principal():
 
     #####################################################
     # Aggrid
-    df = df.map(lambda x: round(x) if isinstance(x, (int, float)) else x)
+    df = df.map(lambda x: round(x) if isinstance(x, (int, float)) else x).replace(0, pd.NA)
 
     gb = GridOptionsBuilder.from_dataframe(df)
 
     gridOptions = gb.build()
-
+    
+    
     gridOptions["defaultColDef"] = {"sortable": False}
     gridOptions["animateRows"] = True
     gridOptions["treeData"]=True
     gridOptions["autoGroupColumnDef"]= {
-        "headerName": 'FASE', "minWidth": 300,
+        "headerName": 'FASE', "minWidth": 170,
         "cellRendererParams": {"suppressCount": True}
     }
     gridOptions["getDataPath"]=JsCode("""function(data){ return data.STRING.split("/"); }""").js_code
@@ -163,29 +162,15 @@ def tabla_principal():
         group = obtener_str_mes(int(group))
         if group not in column_groups:
             column_groups[group] = []
-        column_groups[group].append({"headerName": sub_col, "field": col})
+        column_groups[group].append({"headerName": sub_col, "field": col, "width": 70})
 
     # Crear la estructura de columnas en AgGrid
     column_defs = [{"headerName": "DESCRIPCION", "field": "DESCRIPCION"}]+[
         {"headerName": group, "children": children} for group, children in column_groups.items()
     ]
-
+    
     gb.configure_grid_options(columnDefs = column_defs)
     gb.configure_grid_options(domLayout='autoHeight')
-
-
-    # gb.configure_grid_options(
-    #     columnDefs=[
-    #         {"headerName": "DESCRIPCION", "field": "DESCRIPCION"},
-    #         {
-    #             "headerName": "1",
-    #             "children": [
-    #                 {"headerName": "PV", "field": "1_PV"},
-    #                 {"headerName": "AC", "field": "1_PV"}
-    #             ]
-    #         }
-    #     ]
-    # )
 
     r = AgGrid(
         df,

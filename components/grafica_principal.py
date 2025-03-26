@@ -6,6 +6,9 @@ from plotly.subplots import make_subplots
 from reading import DF_PV, DF_AC, DF_EV, BARRAS, MESES, FASES
 
 def grafica_principal():
+    
+      # Puedes cambiarlo por otro de la lista
+    st.subheader("📌 Resultados Visuales")
 
     #FASES
     jer = st.sidebar.selectbox("Jerarquia", [1, 2, 3, 4])
@@ -28,7 +31,6 @@ def grafica_principal():
     )
 
     fig.update_layout(
-        title= '📊 ANÁLISIS DE VALOR GANADO',
         height=800,
         legend_title="Leyenda",
         xaxis=dict(tickmode="linear", dtick=1)
@@ -62,7 +64,7 @@ def grafica_principal():
 
         final_children = find_leaves(parent)
         
-        df_filtro = df[df['FASE'].isin(final_children)]
+        df_filtro = FASES[FASES['FASE'].isin(final_children)]
         
         return pd.merge(df, df_filtro[['FASE']], on='FASE', how='inner')
 
@@ -81,6 +83,7 @@ def grafica_principal():
         
         df = df[['MES', 'COSTO']].groupby('MES', as_index=False)['COSTO'].sum()
         df['ACUMULADO'] = df['COSTO'].cumsum()
+        
         return df
 
 
@@ -109,7 +112,7 @@ def grafica_principal():
 
     #TABLA
 
-    orden = ['ACUM PV', 'ACUM AC', 'ACUM EV', 'PLAN', 'EARNED', 'ACTUAL']
+    orden = ['PV', 'AC', 'EV', 'PLAN', 'EARNED', 'ACTUAL']
 
     if fase == '':
         fig.add_trace(
