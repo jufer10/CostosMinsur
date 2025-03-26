@@ -126,7 +126,7 @@ def get_hierarchy(code):
         code = parent_map.get(code)
     return "/".join(hierarchy)
 
-df2["HERARQUIA"] = df2["FASE"].apply(get_hierarchy)
+df2["STRING"] = df2["FASE"].apply(get_hierarchy)
 df = pd.merge(df, df2, on='FASE').drop(columns=['FASE', 'PADRE'])
 
 
@@ -146,7 +146,7 @@ gridOptions["autoGroupColumnDef"]= {
     "headerName": 'FASE', "minWidth": 300,
     "cellRendererParams": {"suppressCount": True}
   }
-gridOptions["getDataPath"]=JsCode("""function(data){ return data.HERARQUIA.split("/"); }""").js_code
+gridOptions["getDataPath"]=JsCode("""function(data){ return data.STRING.split("/"); }""").js_code
 
 
 def obtener_str_mes(l1):
@@ -158,7 +158,7 @@ def obtener_str_mes(l1):
 columns = [f"{i}_{letter}" for i in range(1, 32) for letter in ["EV", "AC", "PV"]]
 column_groups = {}
 for col in df.columns:
-    if col == 'DESCRIPCION' or col == 'HERARQUIA': continue
+    if col == 'DESCRIPCION' or col == 'STRING': continue
     group, sub_col = col.split("_")
     group = obtener_str_mes(int(group))
     if group not in column_groups:
