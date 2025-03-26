@@ -62,7 +62,6 @@ def obtener_df_curva(DF, fase='Todas'):
     
     df = df[['MES', 'COSTO']].groupby('MES', as_index=False)['COSTO'].sum()
     df['ACUMULADO'] = df['COSTO'].cumsum()
-    st.dataframe(df)
     return df
 
 
