@@ -78,7 +78,6 @@ def grafica_principal():
         
         if fase == '': pass
         else: df = filter_final_children(df, fase)
-        st.dataframe(df)
         
         df = df[['MES', 'COSTO']].groupby('MES', as_index=False)['COSTO'].sum()
         df['ACUMULADO'] = df['COSTO'].cumsum()
