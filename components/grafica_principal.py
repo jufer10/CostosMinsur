@@ -50,19 +50,22 @@ def obtener_df_curva(DF, fase='Todas'):
     df=DF.dropna(subset=[1])
     
     if DF is DF_PV: cols = [i for i in range(1, 32)]
-    else: cols = [i for i in range(1, 23)]
+    else: cols = [i for i in range(1, 24)]
     
     df = df.melt(id_vars=['FASE'], value_vars=cols, var_name='MES', value_name='COSTO')
     df['MES'] = df['MES'].astype(int)
+    
+    
     
     if fase == 'Todas': pass
     else: df = df[df['FASE'] == fase]
     
     df = df[['MES', 'COSTO']].groupby('MES', as_index=False)['COSTO'].sum()
     df['ACUMULADO'] = df['COSTO'].cumsum()
-    
+    st.dataframe(df)
     return df
-    
+
+
 df_pv = obtener_df_curva(DF_PV, fase)
 df_ac = obtener_df_curva(DF_AC, fase)
 df_ev = obtener_df_curva(DF_EV, fase)

@@ -8,4 +8,5 @@ DF_EV = pd.read_excel(xls, sheet_name="EV")
 DF_AC = pd.read_excel(xls, sheet_name="AC")
 BARRAS = pd.read_excel(xls, sheet_name="BARRAS")
 MESES = pd.read_excel(xls, sheet_name="MESES")
+FASES = pd.read_excel(xls, sheet_name="FASES")
 
